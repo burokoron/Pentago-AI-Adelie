@@ -6,13 +6,64 @@
 #include <math.h>
 #include "main.h"
 
+// 手の入力
+void Input(const BOARD *board, uint64_t *move_pos)
+{
+	char move[5];
+	do {
+		do {
+			if (board->turn == BLACK) {
+				printf("Input move(Black): ");
+				scanf(" %s", move);
+			}
+			else {
+				printf("Input move(White): ");
+				scanf(" %s", move);
+			}
+		} while ((move[0]<'a' || 'f'<move[0]) || (move[1]<'1' || '6'<move[1])
+			        || (move[2]<'1' || '4'<move[2]) || (move[3] != 'r' && move[3] != 'l'));
+
+		move_pos[0] = (uint64_t)1 << (5 - move[0] + 'a' + 6 * (5 - move[1] + '1'));
+
+	} while ((board->black&move_pos[0]) != 0 || (board->white&move_pos[0]) != 0);
+
+	if (move[3] == 'r') {
+		move_pos[1] = (uint64_t)(move[2] - '1') * 2;
+	}
+	else {
+		move_pos[1] = (uint64_t)(move[2] - '1') * 2 + 1;
+	}
+}
+
+// 盤面の出力
+void OutputBoard(const BOARD *board)
+{
+	uint64_t pos = (uint64_t)1 << 35;
+
+	printf(" abcdef\n");
+	for (int i = 0;i<36;i++) {
+		if (i % 6 == 0) {
+			printf("%d", i / 6 + 1);
+		}
+		if ((board->black&pos) != 0) printf("X");
+		else if ((board->white&pos) != 0) printf("O");
+		else printf("-");
+
+		if (i % 6 == 5) printf("\n");
+
+		pos >>= 1;
+	}
+
+	printf("\n");
+}
+
 // コンピュータの思考
 void ComThink(BOARD *board, uint64_t *move_pos, int level, int turn, float limit) {
 	double var, start, end, hash_rate;
 	CLUSTER cluster[3];
 
 	node = 0;
-	entry_count = 1048576;
+	entry_count = 524288;
 
 
 	for (int i = 0;i < 3;i++) {
@@ -21,6 +72,7 @@ void ComThink(BOARD *board, uint64_t *move_pos, int level, int turn, float limit
 	// 反復深化法
 	start = clock();
 	for (int i = 0;i < level;i++) {
+		Init_history();
 		var = NegaAlpha(board, move_pos, &cluster[0], -MY_INFINITY * 10, MY_INFINITY * 10, 0, i + 1);
 		end = clock();
 		hash_rate = 0;
@@ -30,6 +82,7 @@ void ComThink(BOARD *board, uint64_t *move_pos, int level, int turn, float limit
 			}
 		}
 		//printf("depth:%d, value:%f, node:%d, hash_rate:%f, time:%f\n", i + 1, var, node, (float)(hash_rate * 100) / (float)(entry_count * 3), (end - start) / CLOCKS_PER_SEC);
+		Sort_history();
 		// 読み切りなら探索終了
 		if (var < -9000 || 9000 < var) break;
 		// 思考時間制限を超えそうなら探索終了
