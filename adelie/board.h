@@ -11,6 +11,7 @@ enum TURN {
 typedef struct BOARD {
 	uint64_t black, white; //石の配置
 	int turn; //手番
+	int move_num; // 手数
 	uint64_t key; //ハッシュ値
 }BOARD;
 

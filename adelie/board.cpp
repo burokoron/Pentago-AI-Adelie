@@ -57,15 +57,18 @@ void SetBoard(BOARD *board, const char *pos, int turn) {
 	board->key = 0x622b24abed22bd34;
 	board->black = (uint64_t)0;
 	board->white = (uint64_t)0;
+	board->move_num = 0;
 
 	for (int i = 0;i<36;i++) {
 		if (pos[i] == 'x') {
 			board->white |= ((uint64_t)1 << (35 - i));
 			board->key ^= board_key[WHITE - 1][35 - i];
+			board->move_num++;
 		}
 		else if (pos[i] == 'o') {
 			board->black |= ((uint64_t)1 << (35 - i));
 			board->key ^= board_key[BLACK - 1][35 - i];
+			board->move_num++;
 		}
 	}
 	if (board->turn == WHITE) board->key ^= turn_key;
@@ -379,6 +382,7 @@ void DoMoveHash(BOARD *board, uint64_t *move_pos) {
 		board->white ^= move_pos[0];
 		board->turn = BLACK;
 	}
+	board->move_num++;
 
 	switch (move_pos[1])
 	{
@@ -449,6 +453,7 @@ void UnDoMoveHash(BOARD *board, uint64_t *move_pos) {
 		board->white ^= move_pos[0];
 		board->turn = WHITE;
 	}
+	board->move_num--;
 
 	SetHash(board);
 }
@@ -463,6 +468,7 @@ void DoMoveNoHash(BOARD *board, uint64_t *move_pos) {
 		board->white ^= move_pos[0];
 		board->turn = BLACK;
 	}
+	board->move_num++;
 
 	switch (move_pos[1])
 	{
@@ -531,4 +537,5 @@ void UnDoMoveNoHash(BOARD *board, uint64_t *move_pos) {
 		board->white ^= move_pos[0];
 		board->turn = WHITE;
 	}
+	board->move_num--;
 }
