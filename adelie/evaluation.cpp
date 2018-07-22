@@ -7,11 +7,11 @@
 
 #include "evaluation.h"
 
-float row1[729];
-float row2[729];
-float row3[729];
-float srant1[729];
-float srant2[243];
+float row1[36][729];
+float row2[36][729];
+float row3[36][729];
+float srant1[36][729];
+float srant2[36][243];
 
 // 実行ファイルのパスを取得
 char *getmodulefilename()
@@ -41,39 +41,13 @@ void Init_Evaluate_function() {
 		exit(1);
 	}
 
-	for (int i = 0;i < 729;i++) fread(&row1[i], sizeof(float), 1, fp);
-	for (int i = 0;i < 729;i++) fread(&row2[i], sizeof(float), 1, fp);
-	for (int i = 0;i < 729;i++) fread(&row3[i], sizeof(float), 1, fp);
-	for (int i = 0;i < 729;i++) fread(&srant1[i], sizeof(float), 1, fp);
-	for (int i = 0;i < 243;i++) fread(&srant2[i], sizeof(float), 1, fp);
-
-	fclose(fp);
-}
-
-//	評価関数を書き込む
-void Write_evaluate() {
-	FILE *fp;
-	char *fpath;
-
-	fpath = getmodulefilename();
-	for (int i = strlen(fpath);i > 0; i--) {
-		if (fpath[i] == '/') {
-			fpath[i + 1] = '\0';
-			break;
-		}
+	for (int j = 0;j < 36;j++) {
+		for (int i = 0;i < 729;i++) fread(&row1[j][i], sizeof(float), 1, fp);
+		for (int i = 0;i < 729;i++) fread(&row2[j][i], sizeof(float), 1, fp);
+		for (int i = 0;i < 729;i++) fread(&row3[j][i], sizeof(float), 1, fp);
+		for (int i = 0;i < 729;i++) fread(&srant1[j][i], sizeof(float), 1, fp);
+		for (int i = 0;i < 243;i++) fread(&srant2[j][i], sizeof(float), 1, fp);
 	}
-	fpath = strcat(fpath, "evaluation.bin");
-
-	if ((fp = fopen(fpath, "wb+")) == NULL) {
-		printf("No file\n");
-		exit(1);
-	}
-
-	for (int i = 0;i < 729;i++) fwrite(&row1[i], sizeof(float), 1, fp);
-	for (int i = 0;i < 729;i++) fwrite(&row2[i], sizeof(float), 1, fp);
-	for (int i = 0;i < 729;i++) fwrite(&row3[i], sizeof(float), 1, fp);
-	for (int i = 0;i < 729;i++) fwrite(&srant1[i], sizeof(float), 1, fp);
-	for (int i = 0;i < 243;i++) fwrite(&srant2[i], sizeof(float), 1, fp);
 
 	fclose(fp);
 }
@@ -437,11 +411,11 @@ double Evaluate(const BOARD *board) {
 		srant1_index[1] += 0x2;
 	}
 
-	for (int i = 0;i < 4;i++) value += row1[row1_index[i]];
-	for (int i = 0;i < 4;i++) value += row2[row2_index[i]];
-	for (int i = 0;i < 4;i++) value += row3[row3_index[i]];
-	for (int i = 0;i < 2;i++) value += srant1[srant1_index[i]];
-	for (int i = 0;i < 4;i++) value += srant2[srant2_index[i]];
+	for (int i = 0;i < 4;i++) value += row1[board->move_num][row1_index[i]];
+	for (int i = 0;i < 4;i++) value += row2[board->move_num][row2_index[i]];
+	for (int i = 0;i < 4;i++) value += row3[board->move_num][row3_index[i]];
+	for (int i = 0;i < 2;i++) value += srant1[board->move_num][srant1_index[i]];
+	for (int i = 0;i < 4;i++) value += srant2[board->move_num][srant2_index[i]];
 
 	if (board->turn == BLACK) return value;
 	else return -value;
